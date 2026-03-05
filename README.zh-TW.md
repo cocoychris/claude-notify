@@ -13,7 +13,22 @@
 腳本會自動：
 1. 安裝 Claude Code CLI（若尚未安裝）
 2. 安裝 `libnotify-bin`（若尚未安裝）
-3. 設定 `~/.claude/settings.json` 中的 hooks
+3. 開啟互動式選單管理 hooks
+
+## 互動式選單
+
+安裝後會顯示互動選單，可個別切換每個 hook 的開關：
+
+```
+Claude Code 通知 Hook 設定
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1) Stop hook         [ON ]  Claude 停止時通知
+  2) Notification hook [ON ]  Claude 需要回應時通知
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  q) 離開
+```
+
+按 `1` 或 `2` 切換對應 hook，變更**即時生效**。
 
 ## 觸發時機
 
@@ -27,3 +42,4 @@
 - 需要桌面環境支援 `notify-send`（如 GNOME、KDE）
 - Hooks 設定變更**即時生效**，不需重啟 Claude Code
 - 設定存放於 `~/.claude/settings.json`
+- 隨時重新執行 `./setup.sh` 來調整 hook 設定
