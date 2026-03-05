@@ -55,10 +55,10 @@ t() {  # t <zh> <en>
 # ── 通知內容 ───────────────────────────────────────────────
 
 if [[ "$EVENT" == "Notification" && -n "$MESSAGE" ]]; then
-    BODY="$MESSAGE"
+    BODY="⚠️ $MESSAGE"
     ICON="dialog-question"
 else
-    BODY="$(t 'Claude 已停止，等待你的指示' 'Claude has stopped and is waiting for your input')"
+    BODY="$(t '🛑 Claude 已停止，等待你的指示' '🛑 Claude has stopped and is waiting for your input')"
     ICON="dialog-information"
 fi
 
