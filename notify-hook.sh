@@ -7,6 +7,18 @@ set -euo pipefail
 
 INPUT=$(cat)
 
+# ── 立即背景化，讓 Claude hook 不被阻塞 ──────────────────
+# notify-send --action 會等待使用者互動，不能在前景執行。
+# 第一次執行時將 stdin 資料存入環境變數，re-exec 自身至背景後立即返回。
+
+if [[ "${_CLAUDE_NOTIFY_BG:-}" != "1" ]]; then
+    _CLAUDE_NOTIFY_BG=1 CLAUDE_HOOK_INPUT="$INPUT" \
+        nohup "$0" </dev/null >/dev/null 2>&1 &
+    exit 0
+fi
+
+INPUT="${CLAUDE_HOOK_INPUT:-}"
+
 # ── 解析 JSON（失敗時使用安全預設值）─────────────────────
 
 eval "$(printf '%s' "$INPUT" | python3 <<'PY'
