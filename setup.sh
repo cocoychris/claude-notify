@@ -61,6 +61,12 @@ install_deps() {
         installed_something=true
     fi
 
+    if ! command -v xdotool &>/dev/null; then
+        echo "==> $(t '安裝 xdotool（記錄視窗 ID 用）...' 'Installing xdotool (for window ID detection)...')"
+        sudo apt-get install -y xdotool
+        installed_something=true
+    fi
+
     echo "==> $(t '安裝通知腳本...' 'Installing hook scripts...')"
     mkdir -p "$INSTALL_DIR"
     cp "$NOTIFY_HOOK_SRC"  "$NOTIFY_HOOK"
