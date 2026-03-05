@@ -17,17 +17,22 @@ try:
     event           = data.get("hook_event_name", "")
     message         = data.get("message", "")
     transcript_path = data.get("transcript_path", "")
+    # 從 transcript JSONL 讀取 session 名稱：
+    # 優先用 custom-title（/rename 設定的名稱），fallback 用 slug（自動產生）
     slug = ""
+    custom_title = ""
     if transcript_path and os.path.isfile(transcript_path):
         with open(transcript_path) as tf:
             for line in tf:
                 try:
                     rec = json.loads(line)
-                    if rec.get("slug"):
+                    if rec.get("type") == "custom-title" and rec.get("customTitle"):
+                        custom_title = rec["customTitle"]
+                    elif not slug and rec.get("slug"):
                         slug = rec["slug"]
-                        break
                 except Exception:
                     pass
+    slug = custom_title or slug
 except Exception:
     project = "Claude Code"
     event   = ""
@@ -40,10 +45,11 @@ print(f"SLUG={shlex.quote(slug)}")
 PY
 )"
 
-# ── 語系偵測 ───────────────────────────────────────────────
+# ── 語系偵測（預設中文，明確偵測到英文才切換）──────────────
 
 t() {  # t <zh> <en>
-    [[ "${LANG:-}" == zh* ]] && echo "$1" || echo "$2"
+    local lang="${LANG:-${LANGUAGE:-${LC_ALL:-}}}"
+    [[ "$lang" == en* ]] && echo "$2" || echo "$1"
 }
 
 # ── 通知內容 ───────────────────────────────────────────────
@@ -56,7 +62,7 @@ else
     ICON="dialog-information"
 fi
 
-TITLE="Claude Code — ${SLUG:-$PROJECT}"
+TITLE="${SLUG:-$PROJECT} — Claude Code"
 
 # ── 發送通知 ───────────────────────────────────────────────
 
