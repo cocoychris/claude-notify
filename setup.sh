@@ -11,9 +11,7 @@ INSTALL_DIR="$HOME/.local/bin"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 NOTIFY_HOOK_SRC="$SCRIPT_DIR/notify-hook.sh"
-SESSION_HOOK_SRC="$SCRIPT_DIR/session-start-hook.sh"
 NOTIFY_HOOK="$INSTALL_DIR/claude-notify-hook.sh"
-SESSION_HOOK="$INSTALL_DIR/claude-session-start-hook.sh"
 
 # ── 語系偵測 ───────────────────────────────────────────────
 
@@ -55,23 +53,10 @@ install_deps() {
         installed_something=true
     fi
 
-    if ! command -v wmctrl &>/dev/null; then
-        echo "==> $(t '安裝 wmctrl（點擊通知切換視窗用）...' 'Installing wmctrl (for click-to-focus)...')"
-        sudo apt-get install -y wmctrl
-        installed_something=true
-    fi
-
-    if ! command -v xdotool &>/dev/null; then
-        echo "==> $(t '安裝 xdotool（記錄視窗 ID 用）...' 'Installing xdotool (for window ID detection)...')"
-        sudo apt-get install -y xdotool
-        installed_something=true
-    fi
-
     echo "==> $(t '安裝通知腳本...' 'Installing hook scripts...')"
     mkdir -p "$INSTALL_DIR"
-    cp "$NOTIFY_HOOK_SRC"  "$NOTIFY_HOOK"
-    cp "$SESSION_HOOK_SRC" "$SESSION_HOOK"
-    chmod +x "$NOTIFY_HOOK" "$SESSION_HOOK"
+    cp "$NOTIFY_HOOK_SRC" "$NOTIFY_HOOK"
+    chmod +x "$NOTIFY_HOOK"
 
     mkdir -p "$(dirname "$SETTINGS")"
     [ -f "$SETTINGS" ] || echo "{}" > "$SETTINGS"
@@ -133,13 +118,6 @@ toggle() {  # toggle <hook_name>  (HOOK_CMD 須已 export)
     fi
 }
 
-# ── 永遠啟用 SessionStart hook（用於記錄視窗 ID）───────────
-
-configure_session_hook() {
-    export HOOK_CMD="$SESSION_HOOK"
-    set_hook "SessionStart" "on"
-}
-
 # ── 互動選單 ───────────────────────────────────────────────
 
 show_menu() {
@@ -177,5 +155,4 @@ menu() {
 # ── 主流程 ─────────────────────────────────────────────────
 
 install_deps
-configure_session_hook
 menu
