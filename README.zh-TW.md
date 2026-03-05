@@ -15,6 +15,13 @@
 2. 安裝 `libnotify-bin`（若尚未安裝）
 3. 開啟互動式選單管理 hooks
 
+語言依系統 `$LANG` 自動偵測。手動指定：
+
+```bash
+./setup.sh --lang zh   # 強制中文
+./setup.sh --lang en   # 強制英文
+```
+
 ## 互動式選單
 
 安裝後會顯示互動選單，可個別切換每個 hook 的開關：

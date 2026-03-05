@@ -15,6 +15,13 @@ The script will automatically:
 2. Install `libnotify-bin` (if not already installed)
 3. Open an interactive menu to manage hooks
 
+The language is auto-detected from your system `$LANG`. To override:
+
+```bash
+./setup.sh --lang en   # force English
+./setup.sh --lang zh   # force Chinese
+```
+
 ## Interactive menu
 
 After installation, an interactive menu lets you toggle each hook on or off individually:

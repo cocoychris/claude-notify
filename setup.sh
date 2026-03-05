@@ -1,24 +1,63 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 用法：./setup.sh [--lang en|zh]
+#   --lang en  強制英文
+#   --lang zh  強制中文
+#   (預設依系統 $LANG 自動偵測)
+
 SETTINGS="$HOME/.claude/settings.json"
 
 STOP_CMD='notify-send -i dialog-information -t 10000 "Claude Code" "Claude 已停止，等待你的指示"'
 NOTIF_CMD='notify-send -i dialog-question -t 10000 "Claude Code" "Claude 需要你的回應"'
 
-# ── 依賴安裝 ──────────────────────────────────────────────
+# ── 語系偵測 ───────────────────────────────────────────────
+
+detect_lang() {
+    local lang_arg=""
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --lang) lang_arg="${2:-}"; shift 2 ;;
+            *) shift ;;
+        esac
+    done
+
+    if [[ "$lang_arg" == "en" ]]; then
+        echo "en"
+    elif [[ "$lang_arg" == "zh" ]]; then
+        echo "zh"
+    elif [[ "${LANG:-}" == zh* ]]; then
+        echo "zh"
+    else
+        echo "en"
+    fi
+}
+
+LANG_CODE=$(detect_lang "$@")
+
+# ── 語系字串 ───────────────────────────────────────────────
+
+t() {  # t <zh字串> <en字串>
+    if [[ "$LANG_CODE" == "zh" ]]; then
+        echo "$1"
+    else
+        echo "$2"
+    fi
+}
+
+# ── 依賴安裝 ───────────────────────────────────────────────
 
 install_deps() {
     local installed_something=false
 
     if ! command -v claude &>/dev/null; then
-        echo "==> 安裝 Claude Code CLI..."
+        echo "==> $(t '安裝 Claude Code CLI...' 'Installing Claude Code CLI...')"
         curl -fsSL https://claude.ai/install.sh | bash
         installed_something=true
     fi
 
     if ! command -v notify-send &>/dev/null; then
-        echo "==> 安裝 libnotify-bin..."
+        echo "==> $(t '安裝 libnotify-bin...' 'Installing libnotify-bin...')"
         sudo apt-get install -y libnotify-bin
         installed_something=true
     fi
@@ -94,14 +133,14 @@ show_menu() {
     notif_label=$([ "$notif_st" = "on" ] && echo "ON " || echo "OFF")
 
     clear
-    echo "Claude Code 通知 Hook 設定"
+    echo "$(t 'Claude Code 通知 Hook 設定' 'Claude Code Notification Hook Settings')"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  1) Stop hook         [$stop_label]  Claude 停止時通知"
-    echo "  2) Notification hook [$notif_label]  Claude 需要回應時通知"
+    echo "  1) Stop hook         [$stop_label]  $(t 'Claude 停止時通知' 'Notify when Claude stops')"
+    echo "  2) Notification hook [$notif_label]  $(t 'Claude 需要回應時通知' 'Notify when Claude needs a response')"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "  q) 離開"
+    echo "  q) $(t '離開' 'Quit')"
     echo ""
-    printf "請按數字切換 [1/2/q]："
+    printf "%s" "$(t '請按數字切換 [1/2/q]：' 'Press a number to toggle [1/2/q]: ')"
 }
 
 menu() {
@@ -112,7 +151,7 @@ menu() {
         case "$choice" in
             1) toggle "Stop"         "$STOP_CMD"  ;;
             2) toggle "Notification" "$NOTIF_CMD" ;;
-            q|Q) echo "已離開。"; break ;;
+            q|Q) echo "$(t '已離開。' 'Bye.')"; break ;;
         esac
     done
 }
