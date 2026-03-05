@@ -2,6 +2,8 @@
 
 Sends desktop notifications when Claude Code stops or needs your response. Also installs Claude Code for you if it isn't already.
 
+Notifications include the **project name** so you know which session they're from. Click the **Switch Window** button to jump directly to the right Tilix window.
+
 [繁體中文](README.zh-TW.md)
 
 ## Installation
@@ -13,7 +15,9 @@ Sends desktop notifications when Claude Code stops or needs your response. Also 
 The script will automatically:
 1. Install Claude Code CLI (if not already installed)
 2. Install `libnotify-bin` (if not already installed)
-3. Open an interactive menu to manage hooks
+3. Install `wmctrl` for click-to-focus support
+4. Copy hook scripts to `~/.local/bin/`
+5. Open an interactive menu to manage hooks
 
 The language is auto-detected from your system `$LANG`. To override:
 
@@ -27,26 +31,39 @@ The language is auto-detected from your system `$LANG`. To override:
 After installation, an interactive menu lets you toggle each hook on or off individually:
 
 ```
-Claude Code 通知 Hook 設定
+Claude Code Notification Hook Settings
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  1) Stop hook         [ON ]  Claude 停止時通知
-  2) Notification hook [ON ]  Claude 需要回應時通知
+  1) Stop hook         [ON ]  Notify when Claude stops
+  2) Notification hook [ON ]  Notify when Claude needs a response
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  q) 離開
+  q) Quit
 ```
 
-Press `1` or `2` to toggle a hook. Changes take effect immediately.
+Press `1` or `2` to toggle a hook. Changes take effect immediately. Re-run `./setup.sh` anytime to adjust settings.
 
 ## When notifications are sent
 
-| Hook | Trigger |
-|------|---------|
-| `Stop` | Claude has stopped and is waiting for your input |
-| `Notification` | Claude actively needs your response |
+| Hook | Trigger | Notification content |
+|------|---------|----------------------|
+| `Stop` | Claude has stopped and is waiting for your input | Project name |
+| `Notification` | Claude actively needs your response | Project name + Claude's message |
+
+## Click to focus
+
+When `wmctrl` is installed, a **Switch Window** button appears on each notification. Clicking it brings the corresponding Tilix window to the foreground.
+
+This works by recording the X Window ID at session start (`SessionStart` hook) and looking it up when a notification fires.
+
+## Files installed
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | Sends notifications |
+| `session-start-hook.sh` | `~/.local/bin/claude-session-start-hook.sh` | Records window ID at session start |
 
 ## Notes
 
 - Requires a desktop environment that supports `notify-send` (e.g. GNOME, KDE)
 - Hook changes take effect **immediately** — no need to restart Claude Code
 - Settings are stored in `~/.claude/settings.json`
-- Re-run `./setup.sh` anytime to adjust hook settings
+- Window ID mapping is stored in `/tmp/claude-sessions/`

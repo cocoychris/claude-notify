@@ -7,9 +7,13 @@ set -euo pipefail
 #   (預設依系統 $LANG 自動偵測)
 
 SETTINGS="$HOME/.claude/settings.json"
+INSTALL_DIR="$HOME/.local/bin"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STOP_CMD='notify-send -i dialog-information -t 10000 "Claude Code" "Claude 已停止，等待你的指示"'
-NOTIF_CMD='notify-send -i dialog-question -t 10000 "Claude Code" "Claude 需要你的回應"'
+NOTIFY_HOOK_SRC="$SCRIPT_DIR/notify-hook.sh"
+SESSION_HOOK_SRC="$SCRIPT_DIR/session-start-hook.sh"
+NOTIFY_HOOK="$INSTALL_DIR/claude-notify-hook.sh"
+SESSION_HOOK="$INSTALL_DIR/claude-session-start-hook.sh"
 
 # ── 語系偵測 ───────────────────────────────────────────────
 
@@ -21,28 +25,17 @@ detect_lang() {
             *) shift ;;
         esac
     done
-
-    if [[ "$lang_arg" == "en" ]]; then
-        echo "en"
-    elif [[ "$lang_arg" == "zh" ]]; then
-        echo "zh"
-    elif [[ "${LANG:-}" == zh* ]]; then
-        echo "zh"
-    else
-        echo "en"
+    if   [[ "$lang_arg" == "en" ]]; then echo "en"
+    elif [[ "$lang_arg" == "zh" ]]; then echo "zh"
+    elif [[ "${LANG:-}" == zh* ]];  then echo "zh"
+    else                                  echo "en"
     fi
 }
 
 LANG_CODE=$(detect_lang "$@")
 
-# ── 語系字串 ───────────────────────────────────────────────
-
 t() {  # t <zh字串> <en字串>
-    if [[ "$LANG_CODE" == "zh" ]]; then
-        echo "$1"
-    else
-        echo "$2"
-    fi
+    [[ "$LANG_CODE" == "zh" ]] && echo "$1" || echo "$2"
 }
 
 # ── 依賴安裝 ───────────────────────────────────────────────
@@ -61,6 +54,18 @@ install_deps() {
         sudo apt-get install -y libnotify-bin
         installed_something=true
     fi
+
+    if ! command -v wmctrl &>/dev/null; then
+        echo "==> $(t '安裝 wmctrl（點擊通知切換視窗用）...' 'Installing wmctrl (for click-to-focus)...')"
+        sudo apt-get install -y wmctrl
+        installed_something=true
+    fi
+
+    echo "==> $(t '安裝通知腳本...' 'Installing hook scripts...')"
+    mkdir -p "$INSTALL_DIR"
+    cp "$NOTIFY_HOOK_SRC"  "$NOTIFY_HOOK"
+    cp "$SESSION_HOOK_SRC" "$SESSION_HOOK"
+    chmod +x "$NOTIFY_HOOK" "$SESSION_HOOK"
 
     mkdir -p "$(dirname "$SETTINGS")"
     [ -f "$SETTINGS" ] || echo "{}" > "$SETTINGS"
@@ -111,9 +116,8 @@ with open(path, "w") as f:
 PY
 }
 
-toggle() {  # toggle <hook_name> <command>
+toggle() {  # toggle <hook_name>  (HOOK_CMD 須已 export)
     local name="$1"
-    export HOOK_CMD="$2"
     local current
     current=$(get_status "$name")
     if [ "$current" = "on" ]; then
@@ -121,6 +125,13 @@ toggle() {  # toggle <hook_name> <command>
     else
         set_hook "$name" "on"
     fi
+}
+
+# ── 永遠啟用 SessionStart hook（用於記錄視窗 ID）───────────
+
+configure_session_hook() {
+    export HOOK_CMD="$SESSION_HOOK"
+    set_hook "SessionStart" "on"
 }
 
 # ── 互動選單 ───────────────────────────────────────────────
@@ -144,13 +155,14 @@ show_menu() {
 }
 
 menu() {
+    export HOOK_CMD="$NOTIFY_HOOK"
     while true; do
         show_menu
         read -rn1 choice
         echo ""
         case "$choice" in
-            1) toggle "Stop"         "$STOP_CMD"  ;;
-            2) toggle "Notification" "$NOTIF_CMD" ;;
+            1) toggle "Stop"         ;;
+            2) toggle "Notification" ;;
             q|Q) echo "$(t '已離開。' 'Bye.')"; break ;;
         esac
     done
@@ -159,4 +171,5 @@ menu() {
 # ── 主流程 ─────────────────────────────────────────────────
 
 install_deps
+configure_session_hook
 menu
