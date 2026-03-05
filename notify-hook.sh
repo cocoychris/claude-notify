@@ -21,24 +21,39 @@ INPUT="${CLAUDE_HOOK_INPUT:-}"
 
 # ── 解析 JSON（失敗時使用安全預設值）─────────────────────
 
-eval "$(printf '%s' "$INPUT" | python3 <<'PY'
-import json, sys, os, shlex
+eval "$(HOOK_JSON="$INPUT" python3 <<'PY'
+import json, os, shlex
 try:
-    data = json.load(sys.stdin)
-    cwd        = data.get("cwd", "")
-    project    = os.path.basename(cwd.rstrip("/")) or "Claude Code"
-    event      = data.get("hook_event_name", "")
-    message    = data.get("message", "")
-    session_id = data.get("session_id", "")
+    data            = json.loads(os.environ.get("HOOK_JSON", "{}"))
+    cwd             = data.get("cwd", "")
+    project         = os.path.basename(cwd.rstrip("/")) or "Claude Code"
+    event           = data.get("hook_event_name", "")
+    message         = data.get("message", "")
+    session_id      = data.get("session_id", "")
+    transcript_path = data.get("transcript_path", "")
+    # 從 transcript JSONL 取得 session slug（對話名稱）
+    slug = ""
+    if transcript_path and os.path.isfile(transcript_path):
+        with open(transcript_path) as tf:
+            for line in tf:
+                try:
+                    rec = json.loads(line)
+                    if rec.get("slug"):
+                        slug = rec["slug"]
+                        break
+                except Exception:
+                    pass
 except Exception:
     project    = "Claude Code"
     event      = ""
     message    = ""
     session_id = ""
+    slug       = ""
 print(f"PROJECT={shlex.quote(project)}")
 print(f"EVENT={shlex.quote(event)}")
 print(f"MESSAGE={shlex.quote(message)}")
 print(f"SESSION_ID={shlex.quote(session_id)}")
+print(f"SLUG={shlex.quote(slug)}")
 PY
 )"
 
@@ -58,7 +73,7 @@ else
     ICON="dialog-information"
 fi
 
-TITLE="Claude Code — $PROJECT"
+TITLE="Claude Code — ${SLUG:-$PROJECT}"
 
 # ── 查詢視窗 ID（由 session-start-hook.sh 儲存）────────────
 
@@ -89,7 +104,7 @@ if command -v wmctrl &>/dev/null; then
     if ACTION=$(notify-send \
             --icon "$ICON" \
             --expire-time 15000 \
-            --action="focus:$(t '切換視窗' 'Switch Window')" \
+            --action="focus=$(t '切換視窗' 'Switch Window')" \
             --wait \
             "$TITLE" "$BODY" 2>/dev/null); then
         [[ "$ACTION" == "focus" ]] && focus_window
