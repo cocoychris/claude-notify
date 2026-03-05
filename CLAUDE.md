@@ -46,7 +46,9 @@ session-start-hook.sh（SessionStart 事件）
 - `set -e` 環境下，條件判斷要用 `if ...; then ...; fi` 而非 `$var && cmd`
 - Tilix **不會**設定 `$WINDOWID`（那是 xterm 的行為），改用 `xdotool getactivewindow` 在 SessionStart 時抓取焦點視窗
 - 視窗 ID 對應表存於 `/tmp/claude-sessions/`（重開機後會清除）
-- `notify-send --action="focus:Label" --wait` 在點擊按鈕時輸出 `focus` 到 stdout
+- `notify-send 0.8.x` 的 `--action` 格式為 `NAME=Text`（`=`），不是 `NAME:Text`（`:`）；點擊後輸出 `NAME` 到 stdout
+- `pipe | python3 <<'PY'` 中 heredoc 搶走 stdin，`sys.stdin` 讀到空值；改用 `HOOK_JSON="$INPUT" python3 <<'PY'` + `os.environ.get("HOOK_JSON")` 讀取資料
+- Hook JSON 包含 `transcript_path`（JSONL 路徑），可從中讀取 `slug` 欄位取得對話名稱（session slug）
 - GNOME 通知守護程式對有 action 的通知**忽略 `--expire-time`**，`--wait` 會無限阻塞
 - 因此 `notify-hook.sh` 啟動時立即 `nohup` re-exec 自身至背景，stdin 資料透過 `CLAUDE_HOOK_INPUT` 環境變數傳遞
 
