@@ -1,0 +1,11 @@
+# 系統
+.DS_Store
+
+# Claude Code 本地設定
+.claude/
+
+# 編輯器
+.vscode/
+.idea/
+*.swp
+*.swo
