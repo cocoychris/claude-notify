@@ -2,7 +2,7 @@
 
 在 Claude Code 停止或需要回應時，透過系統通知提醒你。如果你還沒安裝 Claude Code 也會幫你裝起來。
 
-通知會顯示**專案名稱**，讓你一眼看出是哪個 session 發出的。點擊通知上的**切換視窗**按鈕，可直接跳回對應的 Tilix 視窗。
+通知標題會顯示 **session 名稱**（優先使用 `/rename` 設定的名稱），讓你一眼看出是哪個 session 發出的。
 
 [English](README.md)
 
@@ -15,11 +15,10 @@
 腳本會自動：
 1. 安裝 Claude Code CLI（若尚未安裝）
 2. 安裝 `libnotify-bin`（若尚未安裝）
-3. 安裝 `wmctrl` 與 `xdotool`（點擊通知切換視窗用）
-4. 將 hook 腳本複製到 `~/.local/bin/`
-5. 開啟互動式選單管理 hooks
+3. 將 hook 腳本複製到 `~/.local/bin/`
+4. 開啟互動式選單管理 hooks
 
-語言依系統 `$LANG` 自動偵測。手動指定：
+語言依系統 `$LANG` 自動偵測，預設中文。手動指定：
 
 ```bash
 ./setup.sh --lang zh   # 強制中文
@@ -45,27 +44,17 @@ Claude Code 通知 Hook 設定
 
 | Hook | 時機 | 通知內容 |
 |------|------|---------|
-| `Stop` | Claude 停止執行，等待你輸入 | 專案名稱 |
-| `Notification` | Claude 主動需要你的回應 | 專案名稱 + Claude 的訊息 |
-
-## 點擊切換視窗
-
-安裝 `wmctrl` 後，每則通知會出現**切換視窗**按鈕。點擊後會將對應的 Tilix 視窗帶到最前面。
-
-原理：在 session 開始時（`SessionStart` hook）用 `xdotool getactivewindow` 記錄視窗 ID，通知觸發時查詢並切換。
-
-> **注意：** 點擊切換視窗功能只對**執行 `./setup.sh` 後新開的** Claude session 有效。每個新 session 啟動時會自動登記視窗。
+| `Stop` | Claude 停止執行，等待你輸入 | session 名稱 |
+| `Notification` | Claude 主動需要你的回應 | session 名稱 + Claude 的訊息 |
 
 ## 安裝的檔案
 
 | 檔案 | 安裝位置 | 用途 |
 |------|---------|------|
 | `notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | 發送通知 |
-| `session-start-hook.sh` | `~/.local/bin/claude-session-start-hook.sh` | 在 session 開始時記錄視窗 ID |
 
 ## 注意事項
 
 - 需要桌面環境支援 `notify-send`（如 GNOME、KDE）
 - Hooks 設定變更**即時生效**，不需重啟 Claude Code
 - 設定存放於 `~/.claude/settings.json`
-- 視窗 ID 對應表存放於 `/tmp/claude-sessions/`
