@@ -15,7 +15,7 @@
 腳本會自動：
 1. 安裝 Claude Code CLI（若尚未安裝）
 2. 安裝 `libnotify-bin`（若尚未安裝）
-3. 安裝 `wmctrl`（點擊通知切換視窗用）
+3. 安裝 `wmctrl` 與 `xdotool`（點擊通知切換視窗用）
 4. 將 hook 腳本複製到 `~/.local/bin/`
 5. 開啟互動式選單管理 hooks
 
@@ -52,7 +52,9 @@ Claude Code 通知 Hook 設定
 
 安裝 `wmctrl` 後，每則通知會出現**切換視窗**按鈕。點擊後會將對應的 Tilix 視窗帶到最前面。
 
-原理：在 session 開始時（`SessionStart` hook）記錄 X Window ID，通知觸發時查詢並切換。
+原理：在 session 開始時（`SessionStart` hook）用 `xdotool getactivewindow` 記錄視窗 ID，通知觸發時查詢並切換。
+
+> **注意：** 點擊切換視窗功能只對**執行 `./setup.sh` 後新開的** Claude session 有效。每個新 session 啟動時會自動登記視窗。
 
 ## 安裝的檔案
 

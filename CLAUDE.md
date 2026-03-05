@@ -20,20 +20,21 @@
 
 ```
 setup.sh
-  ├─ 安裝 claude / libnotify-bin / wmctrl
+  ├─ 安裝 claude / libnotify-bin / wmctrl / xdotool
   ├─ 複製 notify-hook.sh → ~/.local/bin/claude-notify-hook.sh
   ├─ 複製 session-start-hook.sh → ~/.local/bin/claude-session-start-hook.sh
   ├─ 永遠啟用 SessionStart hook（記錄視窗 ID）
   └─ 互動選單：切換 Stop / Notification hook
 
 notify-hook.sh（Stop / Notification 事件）
-  ├─ 從 stdin JSON 取得 cwd（專案名）、message、session_id
-  ├─ 查詢 /tmp/claude-sessions/{session_id} 得到 WINDOWID
-  ├─ notify-send --action --wait 顯示通知
+  ├─ 讀取 stdin，立即 nohup re-exec 自身至背景後退出（不阻塞 Claude）
+  ├─ 背景中：從 CLAUDE_HOOK_INPUT 解析 cwd（專案名）、message、session_id
+  ├─ 查詢 /tmp/claude-sessions/{session_id} 得到 Window ID
+  ├─ notify-send --action --wait 顯示通知（阻塞在背景，不影響 Claude）
   └─ 若點擊「切換視窗」→ wmctrl 切換至對應視窗
 
 session-start-hook.sh（SessionStart 事件）
-  └─ 將 $WINDOWID 寫入 /tmp/claude-sessions/{session_id}
+  └─ 用 xdotool getactivewindow 抓取當前焦點視窗 ID，寫入 /tmp/claude-sessions/{session_id}
 ```
 
 ## 重要知識
@@ -43,9 +44,11 @@ session-start-hook.sh（SessionStart 事件）
 - 用 Python3 的 `json` 模組處理 JSON 讀寫，避免引入 `jq` 依賴
 - hook 指令字串透過環境變數傳給 Python，避免引號跳脫問題
 - `set -e` 環境下，條件判斷要用 `if ...; then ...; fi` 而非 `$var && cmd`
-- `$WINDOWID` 由 Tilix 等終端模擬器設定，並透過環境繼承至 Claude 及其子 hook 程序
+- Tilix **不會**設定 `$WINDOWID`（那是 xterm 的行為），改用 `xdotool getactivewindow` 在 SessionStart 時抓取焦點視窗
 - 視窗 ID 對應表存於 `/tmp/claude-sessions/`（重開機後會清除）
 - `notify-send --action="focus:Label" --wait` 在點擊按鈕時輸出 `focus` 到 stdout
+- GNOME 通知守護程式對有 action 的通知**忽略 `--expire-time`**，`--wait` 會無限阻塞
+- 因此 `notify-hook.sh` 啟動時立即 `nohup` re-exec 自身至背景，stdin 資料透過 `CLAUDE_HOOK_INPUT` 環境變數傳遞
 
 ## Hook 設定格式
 

@@ -15,7 +15,7 @@ Notifications include the **project name** so you know which session they're fro
 The script will automatically:
 1. Install Claude Code CLI (if not already installed)
 2. Install `libnotify-bin` (if not already installed)
-3. Install `wmctrl` for click-to-focus support
+3. Install `wmctrl` and `xdotool` for click-to-focus support
 4. Copy hook scripts to `~/.local/bin/`
 5. Open an interactive menu to manage hooks
 
@@ -52,7 +52,9 @@ Press `1` or `2` to toggle a hook. Changes take effect immediately. Re-run `./se
 
 When `wmctrl` is installed, a **Switch Window** button appears on each notification. Clicking it brings the corresponding Tilix window to the foreground.
 
-This works by recording the X Window ID at session start (`SessionStart` hook) and looking it up when a notification fires.
+This works by recording the X Window ID at session start (`SessionStart` hook, using `xdotool getactivewindow`) and looking it up when a notification fires.
+
+> **Note:** Click-to-focus activates only for **new** Claude sessions started after running `./setup.sh`. Each new session automatically registers its window.
 
 ## Files installed
 
