@@ -10,7 +10,7 @@ SETTINGS="$HOME/.claude/settings.json"
 INSTALL_DIR="$HOME/.local/bin"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-NOTIFY_HOOK_SRC="$SCRIPT_DIR/notify-hook.sh"
+NOTIFY_HOOK_SRC="$SCRIPT_DIR/src/notify-hook.sh"
 NOTIFY_HOOK="$INSTALL_DIR/claude-notify-hook.sh"
 
 # ── 語系偵測 ───────────────────────────────────────────────

@@ -51,7 +51,7 @@ Claude Code 通知 Hook 設定
 
 | 檔案 | 安裝位置 | 用途 |
 |------|---------|------|
-| `notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | 發送通知 |
+| `src/notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | 發送通知 |
 
 ## 注意事項
 

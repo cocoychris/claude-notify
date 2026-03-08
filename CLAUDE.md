@@ -11,8 +11,8 @@
 ## 檔案結構
 
 - `setup.sh` — 主腳本（安裝依賴 + 互動選單）
-- `notify-hook.sh` — 通知 hook（Stop/Notification 事件用，安裝至 `~/.local/bin/`）
-- `session-start-hook.sh` — 已棄用（保留作歷史記錄，不再安裝）
+- `src/notify-hook.sh` — 通知 hook（Stop/Notification 事件用，安裝至 `~/.local/bin/`）
+- `src/session-start-hook.sh` — 已棄用（保留作歷史記錄，不再安裝）
 - `README.md` — 英文說明
 - `README.zh-TW.md` — 中文說明
 
@@ -21,7 +21,7 @@
 ```
 setup.sh
   ├─ 安裝 claude / libnotify-bin
-  ├─ 複製 notify-hook.sh → ~/.local/bin/claude-notify-hook.sh
+  ├─ 複製 src/notify-hook.sh → ~/.local/bin/claude-notify-hook.sh
   └─ 互動選單：切換 Stop / Notification hook
 
 notify-hook.sh（Stop / Notification 事件）
@@ -76,6 +76,6 @@ notify-hook.sh（Stop / Notification 事件）
 
 ## 修改通知內容
 
-- 靜態訊息：編輯 `notify-hook.sh` 中的文字，重新執行 `./setup.sh` 重新安裝
+- 靜態訊息：編輯 `src/notify-hook.sh` 中的文字，重新執行 `./setup.sh` 重新安裝
 - 通知指令（圖示、過期時間）：同上
 - 新增 hook 事件：在 `setup.sh` 的 `install_deps()` 後仿照現有 hook 新增設定

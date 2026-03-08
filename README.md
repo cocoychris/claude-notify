@@ -51,7 +51,7 @@ Press `1` or `2` to toggle a hook. Changes take effect immediately. Re-run `./se
 
 | File | Location | Purpose |
 |------|----------|---------|
-| `notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | Sends notifications |
+| `src/notify-hook.sh` | `~/.local/bin/claude-notify-hook.sh` | Sends notifications |
 
 ## Notes
 
