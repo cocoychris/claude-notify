@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+_LIB="/usr/local/lib/shell-scripts-lib"
+if [[ ! -d "$_LIB" ]]; then
+    echo "[ERR] 缺少 shell-scripts-lib，請先執行安裝："
+    echo "      git clone git@github.com:cocoychris/shell-scripts-lib.git"
+    echo "      sudo bash shell-scripts-lib/install.sh"
+    exit 1
+fi
+source "$_LIB/pause-if-direct.sh"
+
 # 用法：./setup.sh [--lang en|zh]
 #   --lang en  強制英文
 #   --lang zh  強制中文
